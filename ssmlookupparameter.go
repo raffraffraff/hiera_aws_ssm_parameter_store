@@ -1,11 +1,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/lyraproj/dgo/dgo"
 	"github.com/lyraproj/hierasdk/hiera"
@@ -23,58 +22,39 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
 	if key == `lookup_options` {
 		return nil
 	}
+
 	parameterName, ok := hc.StringOption(`parameter_name`)
 	if !ok {
 		panic(fmt.Errorf(`missing required provider option 'parameter_name'`))
 	}
 	awsProfileName, _ := hc.StringOption(`aws_profile_name`)
+	if !ok {
+		panic(fmt.Errorf(`missing required provider option 'aws_profile_name'`))
+	}
+	awsRegionName, _ := hc.StringOption(`aws_region`)
+	if !ok {
+		panic(fmt.Errorf(`missing required provider option 'aws_region'`))
+	}
 
 	// Create a new AWS session with the specified profile
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-		Profile:           awsProfileName,
-	}))
+	sess, err := session.NewSessionWithOptions(session.Options{
+		Profile: awsProfileName,
+		Config: aws.Config{
+			Region: aws.String(awsRegionName),
+		},
+        })
 
-	// Create a new AWS SSM client
 	ssmSvc := ssm.New(sess)
 
-	// Call the AWS SSM API to get the parameter value
-	resp, err := ssmSvc.GetParameterWithContext(context.Background(), &ssm.GetParameterInput{
-		Name: &parameterName,
+	res, err := ssmSvc.GetParameter(&ssm.GetParameterInput{
+		Name:           aws.String(parameterName),
+		WithDecryption: aws.Bool(true),
 	})
 	if err != nil {
-		panic(err)
+		return nil
 	}
+	decryptedValue := aws.StringValue(res.Parameter.Value)
 
-	// Get the parameter value
-	parameterValue := *resp.Parameter.Value
-
-	// Check if KMS encryption was used
-	if resp.Parameter.KeyId != nil {
-		kmsAlias, ok := hc.StringOption(`kms_key_alias`)
-		if !ok {
-			panic(fmt.Errorf(`missing required provider option 'kms_key_alias' for KMS-encrypted parameter`))
-		}
-
-		// Create a new AWS KMS client
-		kmsSvc := kms.New(sess)
-
-		// Call the AWS KMS API to decrypt the parameter value
-		decryptResp, err := kmsSvc.DecryptWithContext(context.Background(), &kms.DecryptInput{
-			CiphertextBlob: parameterValue,
-			EncryptionContext: map[string]*string{
-				"PARAMETER_NAME": &parameterName,
-			},
-		})
-		if err != nil {
-			panic(err)
-		}
-
-		// Get the decrypted value
-		parameterValue = string(decryptResp.Plaintext)
-	}
-
-	// Return the parameter value
-	return hc.ToData(parameterValue)
+	return hc.ToData(decryptedValue)
 }
 

@@ -35,7 +35,7 @@ hierarchy:
   lookup_key: "aws_ssm_parameter_store"
   options:
     parameter_name: "my_parameter"
-    kms_key_alias: "alias/my_key"
     aws_profile_name: "internal.admin"
+    region: "eu-west-1"
 ```
 
