@@ -23,15 +23,11 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
 		return nil
 	}
 
-	parameterName, ok := hc.StringOption(`parameter_name`)
-	if !ok {
-		panic(fmt.Errorf(`missing required provider option 'parameter_name'`))
-	}
-	awsProfileName, _ := hc.StringOption(`aws_profile_name`)
+	awsProfileName, ok := hc.StringOption(`aws_profile_name`)
 	if !ok {
 		panic(fmt.Errorf(`missing required provider option 'aws_profile_name'`))
 	}
-	awsRegionName, _ := hc.StringOption(`aws_region`)
+	awsRegionName, ok := hc.StringOption(`aws_region`)
 	if !ok {
 		panic(fmt.Errorf(`missing required provider option 'aws_region'`))
 	}
@@ -47,7 +43,7 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
 	ssmSvc := ssm.New(sess)
 
 	res, err := ssmSvc.GetParameter(&ssm.GetParameterInput{
-		Name:           aws.String(parameterName),
+		Name:           aws.String(key),
 		WithDecryption: aws.Bool(true),
 	})
 	if err != nil {

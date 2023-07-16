@@ -23,19 +23,20 @@ To add the Parameter Store to Hiera's lookup hierarchy, update `hiera.yaml`:
 ```
 ---
 version: 5
+
 defaults:
-  datadir: hiera
+  plugindir: ./plugins
+  datadir: ./hiera
   data_hash: yaml_data
 
 hierarchy:
-- name: common
-  path: common.yaml
-- name: "aws_ssm_parameter_store"
-  path: "/secrets/"
-  lookup_key: "aws_ssm_parameter_store"
-  options:
-    parameter_name: "my_parameter"
-    aws_profile_name: "internal.admin"
-    region: "eu-west-1"
+  - name: secrets
+    lookup_key: ssm_parameter_store
+    options:
+	aws_profile_name: %{aws_account}.admin
+	region: %{region}
+
+  - name: common
+    path: common.yaml
 ```
 
