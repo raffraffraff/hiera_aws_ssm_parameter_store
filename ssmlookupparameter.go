@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	register.LookupKey(`aws_ssm_parameter_store`, AWSSSMParameterStoreLookupKey)
+	register.LookupKey(`aws_ssm_parameter`, AWSSSMParameterStoreLookupKey)
 	plugin.ServeAndExit()
 }
 
@@ -27,18 +27,21 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
 	if !ok {
 		panic(fmt.Errorf(`missing required provider option 'aws_profile_name'`))
 	}
+
 	awsRegionName, ok := hc.StringOption(`aws_region`)
 	if !ok {
 		panic(fmt.Errorf(`missing required provider option 'aws_region'`))
 	}
 
-	// Create a new AWS session with the specified profile
 	sess, err := session.NewSessionWithOptions(session.Options{
 		Profile: awsProfileName,
 		Config: aws.Config{
 			Region: aws.String(awsRegionName),
 		},
         })
+	if err != nil {
+		return nil
+	}
 
 	ssmSvc := ssm.New(sess)
 
@@ -49,6 +52,7 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
 	if err != nil {
 		return nil
 	}
+
 	decryptedValue := aws.StringValue(res.Parameter.Value)
 
 	return hc.ToData(decryptedValue)

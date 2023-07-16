@@ -14,8 +14,10 @@ Then make the plugin available to Hiera. See
 When debugging remotely from an IDE like JetBrains goland, use `-gcflags 'all=N -l'` to ensure that all symbols are present in the
 final binary.
 ```
-go build -o aws_ssm_parameter_store -gcflags 'all=-N -l'
+go build -o aws_ssm_parameter -gcflags 'all=-N -l'
 ```
+
+To install it, copy the binary to your Hiera plugins directory.
 
 ## Examples
 To add the Parameter Store to Hiera's lookup hierarchy, update `hiera.yaml`:
@@ -31,7 +33,7 @@ defaults:
 
 hierarchy:
   - name: secrets
-    lookup_key: aws_ssm_parameter_store
+    lookup_key: aws_ssm_parameter
     options:
       aws_profile_name: internal.admin
       aws_region: eu-west-1
