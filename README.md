@@ -1,6 +1,6 @@
-## AWS SSM Parameter Store parameter lookup
+## AWS SSM Parameter Store parameter plugin for Hiera 5 (go)
 
-This function allows you to look up single values stored as parameters in AWS SSM Parameter Store. It can optionally specify a KMS key alias for decrypting secrets.
+This function allows you to look up single values stored as parameters in AWS SSM Parameter Store. The intended use-case is to store secrets with KMS encryption in Parameter Store. Current status of the project is alpha, broken, no idea if it'll ever work. Feel free to offer help!
 
 ## Installation
 Build the plugin from the root directory of this module:
