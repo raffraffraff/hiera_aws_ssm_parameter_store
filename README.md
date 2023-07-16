@@ -31,10 +31,10 @@ defaults:
 
 hierarchy:
   - name: secrets
-    lookup_key: ssm_parameter_store
+    lookup_key: aws_ssm_parameter_store
     options:
-	aws_profile_name: %{aws_account}.admin
-	region: %{region}
+      aws_profile_name: internal.admin
+      aws_region: eu-west-1
 
   - name: common
     path: common.yaml
