@@ -73,3 +73,31 @@ Now you can perform a lookup for `/dev/db_password`:
 [user@box ~]$ lookup --config=hiera.yaml "/dev/db_password"
 VerySecretPassword
 ```
+
+## Performing parameter store lookups in your existing Hiera yaml
+You can use Hiera's internal `lookup` function to insert the value of a parameter anywhere. Consider the following example YAML which is used to define a list of databases for a PostgreSQL terraform module:
+
+```
+postgres:
+  databases:
+    monolithdb:
+      encoding: "UTF8"
+      lc_collate: "en_US.UTF-8"
+      lc_ctype: "en_US.UTF-8"
+      owner: pgadmin
+  roles:
+    frontend:
+      database: monolithdb
+      password: "%{lookup('/database/monolithdb/frontend')}"
+```
+
+We can execute a lookup for all `postgres.roles` using the `lookup` tool:
+
+```
+[user@box ~]$ lookup --config=hiera.yaml postgres.roles
+frontend:
+  database: monolithdb
+  password: VerySecretPassword
+```
+
+As long as the AWS SSM Parameter Store has a value of type SecureString in that path, Hiera can interpolate it.
