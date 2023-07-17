@@ -47,7 +47,7 @@ hierarchy:
       aws_region: %{region}
 ```
 
-NOTE: Since I already pass `region` and `aws_account` values to the Hiera provider, I'm using them to configure the 'aws_ssm_parameter' plugin, so it always performs lookups in the correct AWS account and region. I'm also using AWS Identity Center (formerly SSO) and auto-create aws-cli profiles using (aws-sso-util)[https://github.com/benkehoe/aws-sso-util].
+NOTE: Since I already pass `region` and `aws_account` values to the Hiera provider, I'm using them to configure the 'aws_ssm_parameter' plugin, so it always performs lookups in the correct AWS account and region. I'm also using AWS Identity Center (formerly SSO) and auto-create aws-cli profiles using [aws-sso-util](https://github.com/benkehoe/aws-sso-util).
 
 ## Test lookup
 To test the plugin, write a test parameter to AWS SSM Parameter Store using the AWS cli:
