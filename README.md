@@ -43,11 +43,16 @@ hierarchy:
   - name: secrets
     lookup_key: aws_ssm_parameter
     options:
-      aws_profile_name: %{aws_account}.AdministratorAccess
-      aws_region: %{region}
+      aws_profile_name: internal.AdministratorAccess
+      aws_region: eu-west-1
 ```
 
-NOTE: Since I already pass `region` and `aws_account` values to the Hiera provider, I'm using them to configure the 'aws_ssm_parameter' plugin, so it always performs lookups in the correct AWS account and region. I'm also using AWS Identity Center (formerly SSO) and auto-create aws-cli profiles using [aws-sso-util](https://github.com/benkehoe/aws-sso-util).
+## Status: works (technically) but not flexible enough
+Even though I already pass my AWS `region` and `aws_account` to the Hiera provider, I can't use them in the `options:` section. Interpolation in those fields _fails_. I think this might be a bug in the hierasdk for go. That gives me just two options:
+1. I hard-code secret lookup to a specific AWS account and region
+2. I rip out the options and export `AWS_PROFILE` and `AWS_REGION` environment variables
+
+#2 _works_ but it's nasty and dangerous because it would override your Terraform AWS provider configuration (I think)! I don't know if any of the other hierarchy values are available to the aws_ssm_parameter function, I'll investigate later.
 
 ## Test lookup
 To test the plugin, write a test parameter to AWS SSM Parameter Store using the AWS cli:
