@@ -26,7 +26,6 @@ To add the Parameter Store to Hiera's lookup hierarchy, update `hiera.yaml`. The
 version: 5
 
 defaults:
-  plugindir: ./plugins
   datadir: ./hiera
   data_hash: yaml_data
 
@@ -41,11 +40,14 @@ hierarchy:
     path: region/%{aws_account}.yaml
 
   - name: secrets
+    plugindir: ./plugins
     lookup_key: aws_ssm_parameter
     options:
       aws_profile_name: Management.ReadOnlyAccess
       aws_region: us-west-1
 ```
+
+NOTE: If you're using Hiera via the Terraform hiera provider, then you must define `plugindir` inside the hierarchy for the plugin! There's a bug in the provider that causes it to completely ignore the `plugindir` directive in the defaults section of the `hiera.yaml`, and it falls back to the path `/home/hiera/plugin`! 
 
 ## Status: works, but not flexible
 Even though I already pass my AWS `region` and `aws_account` to the Hiera, I can't use them in the `options:` section. Interpolation in those fields _fails_. I created an [issue](https://github.com/lyraproj/hiera/issues/96) on the hiera project, but I think that the project may be dead :(
