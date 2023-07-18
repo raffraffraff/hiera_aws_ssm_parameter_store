@@ -2,6 +2,7 @@ package main
 
 import (
   "fmt"
+  "os"
 
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/aws/session"
@@ -51,13 +52,13 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
   }
 
   awsProfileName, ok := hc.StringOption(`aws_profile_name`)
-  if !ok {
-    panic(fmt.Errorf(`missing required provider option 'aws_profile_name'`))
+  if !ok && os.Getenv("AWS_PROFILE") == "" && os.Getenv("AWS_ACCESS_KEY_ID") == "" {
+      panic(fmt.Errorf(`missing provider option 'aws_profile_name' and no AWS_PROFILE / AWS_ACCESS_KEY_ID environment variables are set`))
   }
 
   awsRegionName, ok := hc.StringOption(`aws_region`)
-  if !ok {
-    panic(fmt.Errorf(`missing required provider option 'aws_region'`))
+  if !ok && os.Getenv("AWS_REGION") == "" {
+    panic(fmt.Errorf(`missing provider option 'aws_region' and no AWS_REGION environment variable is set`))
   }
 
   newsess, err := session.NewSessionWithOptions(session.Options{
@@ -66,12 +67,13 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
                        },
     Profile:           awsProfileName,
     SharedConfigState: session.SharedConfigEnable,
-   })
+  })
+
 
   sess := session.Must(newsess, err)
   ssmsvc := &SSM{ssm.New(sess)}
-  result,err := ssmsvc.Param(key, true).GetValue()
 
+  result, err := ssmsvc.Param(key, true).GetValue()
   return hc.ToData(result)
 }
 
