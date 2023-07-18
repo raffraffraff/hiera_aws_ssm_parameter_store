@@ -43,24 +43,27 @@ hierarchy:
   - name: secrets
     lookup_key: aws_ssm_parameter
     options:
-      aws_profile_name: internal.AdministratorAccess
-      aws_region: eu-west-1
+      aws_profile_name: Management.ReadOnlyAccess
+      aws_region: us-west-1
 ```
 
-## Status: works (technically) but not flexible enough
-Even though I already pass my AWS `region` and `aws_account` to the Hiera provider, I can't use them in the `options:` section. Interpolation in those fields _fails_. I think this might be a bug in the hierasdk for go. That gives me just two options:
-1. I hard-code secret lookup to a specific AWS account and region
-2. I rip out the options and export `AWS_PROFILE` and `AWS_REGION` environment variables
+## Status: works, but not flexible
+Even though I already pass my AWS `region` and `aws_account` to the Hiera, I can't use them in the `options:` section. Interpolation in those fields _fails_. I created an [issue](https://github.com/lyraproj/hiera/issues/96) on the hiera project, but I think that the project may be dead :(
 
-#2 _works_ but it's nasty and dangerous because it would override your Terraform AWS provider configuration (I think)! I don't know if any of the other hierarchy values are available to the aws_ssm_parameter function, I'll investigate later.
+That leaves two options:
+1. Hard-code the lookup to use a specific AWS account and region
+2. Remove the options and export `AWS_PROFILE` and `AWS_REGION` environment variables instead
+
+#1 depends on your use case and interpretation of your company security policies
+#2 requires external automation or manual steps, and may cause other unwanted effects but at least you're not hard-coding stuff into your hiera.yaml
 
 ## Test lookup
-To test the plugin, write a test parameter to AWS SSM Parameter Store using the AWS cli:
+To test the plugin, you'll need to write a test parameter to AWS SSM Parameter Store using the AWS cli:
 
 ```
 [user@box ~]$ aws ssm put-parameter \
-  --region eu-west-1 \
-  --profile dev.AdministratorAccess \
+  --region us-west-1 \
+  --profile Management.ReadOnlyAccess \
   --type SecureString \
   --name "/dev/db_password" \
   --value "VerySecretPassword"
