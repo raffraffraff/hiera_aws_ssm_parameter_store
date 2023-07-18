@@ -74,6 +74,9 @@ func AWSSSMParameterStoreLookupKey(hc hiera.ProviderContext, key string) dgo.Val
   ssmsvc := &SSM{ssm.New(sess)}
 
   result, err := ssmsvc.Param(key, true).GetValue()
+  if result == "" {
+    return nil
+  }
   return hc.ToData(result)
 }
 
