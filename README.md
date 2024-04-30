@@ -41,12 +41,13 @@ hierarchy:
 
   - name: secrets
     lookup_key: aws_ssm_parameter
+    plugindir: "plugin"
     options:
       aws_profile_name: Management.ReadOnlyAccess
       aws_region: us-west-1
 ```
 
-NOTE: You can use a different plugin path if you wish, but you must add a `plugindir` inside the hierarchy that uses the plugin. Placing the plugindir in the defaults section does not work.
+NOTE: The default plugindir is already supposed to be "plugin". Without the explicit plugindir in the configuration example above, the `lookup` tool successfully invokes the plugin and searches the AWS SSM Parameter Store. However, this does not work if you invoke Hiera from the Terraform Hiera Provider.
 
 ## Status: works, but not flexible
 Even though I already pass my AWS `region` and `aws_account` to the Hiera, I can't use them in the `options:` section. Interpolation in those fields _fails_. I created an [issue](https://github.com/lyraproj/hiera/issues/96) on the hiera project, but I think that the project may be dead :(
