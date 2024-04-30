@@ -7,7 +7,7 @@ Build the plugin from the root directory of this module:
 ```
 go build -o aws_ssm_parameter
 ```
-To add theplugin to Hiera, you need to configure a `plugindir` in your `hiera.yaml` and copy the go bin to that directory. See [Extending Hiera](https://github.com/lyraproj/hiera#Extending-Hiera) for more information.
+To add theplugin to Hiera, create a "plugin" directory in your Hiera project and copy the bin to that it. See [Extending Hiera](https://github.com/lyraproj/hiera#Extending-Hiera) for more information.
 
 ### A Note about debugging
 When debugging remotely from an IDE like JetBrains goland, use `-gcflags 'all=N -l'` to ensure that all symbols are present in the
@@ -16,7 +16,7 @@ final binary.
 go build -o aws_ssm_parameter -gcflags 'all=-N -l'
 ```
 
-To install it, copy the binary to your Hiera plugins directory.
+To install it, copy the binary to your Hiera plugin directory.
 
 ## Hiera config example
 To add the Parameter Store to Hiera's lookup hierarchy, update `hiera.yaml`. The plugin currently requires two parameters: `aws_profile_name` and `aws_region`. This example `hiera.yaml` places the AWS Parameter Store lookup _last_, so Hiera won't query AWS SSM Parameter Store unless the other hierarchies fail to return data. (Of course, this depends on your hiera lookup configuration)
@@ -40,14 +40,13 @@ hierarchy:
     path: region/%{aws_account}.yaml
 
   - name: secrets
-    plugindir: ./plugins
     lookup_key: aws_ssm_parameter
     options:
       aws_profile_name: Management.ReadOnlyAccess
       aws_region: us-west-1
 ```
 
-NOTE: If you're using Hiera via the Terraform hiera provider, then you must define `plugindir` inside the hierarchy for the plugin! There's a bug in the provider that causes it to completely ignore the `plugindir` directive in the defaults section of the `hiera.yaml`, and it falls back to the path `/home/hiera/plugin`! 
+NOTE: You can use a different plugin path if you wish, but you must add a `plugindir` inside the hierarchy that uses the plugin. Placing the plugindir in the defaults section does not work.
 
 ## Status: works, but not flexible
 Even though I already pass my AWS `region` and `aws_account` to the Hiera, I can't use them in the `options:` section. Interpolation in those fields _fails_. I created an [issue](https://github.com/lyraproj/hiera/issues/96) on the hiera project, but I think that the project may be dead :(
