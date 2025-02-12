@@ -108,21 +108,24 @@ func AWSGetParameter(hc hiera.ProviderContext, key string) dgo.Value {
 		panic(fmt.Errorf("AWS authentication error: %v", err))
 	}
 
-	ssmsvc := ssm.New(sess)
-	decrypt := true
-	result, err := ssmsvc.GetParameter(&ssm.GetParameterInput{
-		Name:           aws.String(key),
-		WithDecryption: &decrypt,
-	})
-	if err != nil {
-		panic(fmt.Errorf("Failed to retrieve parameter: %v", err))
-	}
+	ssmsvc := &SSM{ssm.New(sess)}
 
-        value := *result.Parameter.Value
-        if value == "" {
-          return nil
-        }
-        return hc.ToData("test")
+	result, err := ssmsvc.Param(key, true).GetValue()
+	if result == "" {
+		return nil
+	}
+	return hc.ToData(result)
+
+
+	//if err != nil {
+	//	panic(fmt.Errorf("Failed to retrieve parameter: %v", err))
+	//}
+
+        //value := *result.Parameter.Value
+        //if value == "" {
+        //  return nil
+        //}
+        //return hc.ToData("test")
 //	return hc.ToData(*result.Parameter.Value)
 }
 
