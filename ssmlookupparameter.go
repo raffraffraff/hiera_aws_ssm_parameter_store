@@ -15,6 +15,37 @@ import (
 	"github.com/lyraproj/hierasdk/register"
 )
 
+type SSM struct {
+  client ssmiface.SSMAPI
+}
+
+type Param struct {
+  Name string
+  WithDecryption bool
+  ssmsvc *SSM
+}
+
+func (s *SSM) Param(name string, decryption bool) *Param {
+  return &Param{
+    Name: name,
+    WithDecryption: decryption,
+    ssmsvc: s,
+  }
+}
+
+func (p *Param) GetValue() (string, error){
+  ssmsvc := p.ssmsvc.client
+  parameter, err := ssmsvc.GetParameter(&ssm.GetParameterInput{
+    Name:           &p.Name,
+    WithDecryption: &p.WithDecryption,
+  })
+  if err != nil {
+    return "" , err
+  }
+  value := *parameter.Parameter.Value
+  return value, nil
+}
+
 func checkAWSAuth(sess *session.Session, profile string) error {
 	svc := sts.New(sess)
 	_, err := svc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
