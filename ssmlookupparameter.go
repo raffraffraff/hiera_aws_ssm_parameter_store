@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
         "github.com/aws/aws-sdk-go/service/sts"
 	"github.com/lyraproj/dgo/dgo"
 	"github.com/lyraproj/hierasdk/hiera"
