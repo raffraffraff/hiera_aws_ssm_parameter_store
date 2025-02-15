@@ -72,7 +72,6 @@ VerySecretPassword
 
 NOTE: install the `lookup` tool with the command: `go install github.com/lyraproj/hiera/lookup@latest`
 
-```
 ## Parameter Store lookups anywhere in your existing yaml!
 Using Hiera's internal lookup function, you can insert the value of a parameter _anywhere_. Consider the following example YAML which is used to define a list of databases and roles:
 
