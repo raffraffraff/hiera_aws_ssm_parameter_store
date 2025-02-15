@@ -78,20 +78,21 @@ func AWSGetParameter(hc hiera.ProviderContext, key string) dgo.Value {
 		allowedPrefix = "/"
 	}
 
+	if !strings.HasPrefix(key, allowedPrefix) {
+		return nil
+	}
+
 	result, hit := cache.Get(key)
 	if !hit {
-
-		if !strings.HasPrefix(key, allowedPrefix) {
-			return nil
-		} else {
-			ssmsvc := AWSSSMSession(hc)
-			result, _ = ssmsvc.Param(key, true).GetValue()
-		}
+		ssmsvc := AWSSSMSession(hc)
+		result, _ = ssmsvc.Param(key, true).GetValue()
 		cache.Put(key, result)
 	}
+
 	if result == "" {
 		return nil
 	}
+
 	return hc.ToData(result)
 
 }
