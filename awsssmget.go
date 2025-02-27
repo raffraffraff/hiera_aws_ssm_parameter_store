@@ -46,14 +46,15 @@ func (p *Param) GetValue() (string, error) {
 func AWSSSMSession(hc hiera.ProviderContext) *SSM {
 
 	awsProfileName, ok := hc.StringOption(`aws_profile`)
-	if !ok && awsProfileName != "" {
+	if !ok {
 		panic(fmt.Errorf(`Missing hiera plugin option option 'aws_profile'`))
 	}
 
 	awsRegionName, ok := hc.StringOption(`aws_region`)
-	if !ok && awsRegionName != "" {
+	if !ok {
 		panic(fmt.Errorf(`Missing hiera plugin option 'aws_region'`))
 	}
+
 	sess := AWSNewSession(awsRegionName, awsProfileName)
 	ssmsvc := &SSM{ssm.New(sess)}
 	return ssmsvc
@@ -101,6 +102,7 @@ var ssmsvc *SSM
 var allowedPrefix string
 
 func main() {
+
 	register.LookupKey(`aws_ssm_parameter`, AWSGetParameter)
 	plugin.ServeAndExit()
 }
