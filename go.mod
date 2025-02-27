@@ -1,6 +1,6 @@
 module github.com/raffraffraff/hiera_aws_ssm_parameter_store
 
-go 1.24rc1
+go 1.24
 
 require (
 	github.com/aws/aws-sdk-go v1.55.6
